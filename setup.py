@@ -16,7 +16,7 @@ setup(
     name='qcsv',
     author='Andrew Gallant',
     author_email='qcsv@burntsushi.net',
-    version='0.0.1',
+    version='0.0.3',
     license='WTFPL',
     description='An API to read and analyze CSV files.',
     long_description=longdesc,

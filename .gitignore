@@ -1,2 +1,5 @@
 doc
 .*.swp
+MANIFEST
+build
+dist
