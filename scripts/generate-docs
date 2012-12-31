@@ -1,0 +1,5 @@
+#!/bin/sh
+
+rm -rf docs/*
+epydoc -v --html --name qcsv --no-private -o ./doc/ qcsv.py
+

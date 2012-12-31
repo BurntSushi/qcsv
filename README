@@ -1,0 +1,5 @@
+An API to read and analyze CSV files by inferring types for each column of
+data.
+
+Currently, only int, float and string types are supported.
+

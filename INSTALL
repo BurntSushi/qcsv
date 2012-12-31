@@ -1,0 +1,4 @@
+It should be as straight-forward as
+
+  sudo python2 setup.py install
+
