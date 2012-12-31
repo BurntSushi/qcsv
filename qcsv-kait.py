@@ -1,5 +1,6 @@
 import csv
 
+
 def read(fname, delimiter=',', skip_header=False):
     """
     read loads cell data, column headers and type information for each column
@@ -18,6 +19,7 @@ def read(fname, delimiter=',', skip_header=False):
     types = column_types(names, rows)
     rows = cast(types, names, rows)
     return types, names, rows
+
 
 def data(fname, delimiter=',', skip_header=False):
     """
@@ -42,12 +44,13 @@ def data(fname, delimiter=',', skip_header=False):
         if len(names) == 0:
             names = map(str, range(0, len(row)))
         assert len(row) == len(names), \
-                'The length of row %d is %d, but others rows have length %d' \
-                    % (i, len(row), len(names))
+            'The length of row %d is %d, but others rows have length %d' \
+            % (i, len(row), len(names))
 
         rows.append(map(str.strip, row))
 
     return names, rows
+
 
 def column_types(names, rows):
     """
@@ -103,16 +106,18 @@ def column_types(names, rows):
                     except ValueError:
                         next_typ = str
 
-            # If a column contains a string, the column type is always a string.
+            # If a column contains a string, the column type is always a
+            # string.
             if prev_typ == str or next_typ == str:
                 types[name] = str
             # A column with floats and ints has type float.
             elif next_typ == float and prev_typ == int:
                 types[name] = float
             # A column with missing values and X has type X.
-            elif prev_typ == None and next_typ != None:
+            elif prev_typ is None and next_typ is not None:
                 types[name] = next_typ
     return types
+
 
 def cast(types, names, rows):
     """
@@ -131,12 +136,13 @@ def cast(types, names, rows):
         for i, col in enumerate(row):
             typ = types[names[i]]
             if (isinstance(col, basestring) and len(col) == 0) \
-               or typ is None or col is None:
+                    or typ is None or col is None:
                 new_row.append(None)
             else:
                 new_row.append(typ(col))
         new_rows.append(new_row)
     return new_rows
+
 
 def convert_missing_cells(types, names, rows, dstr="", dint=0, dfloat=0.0):
     """
@@ -164,6 +170,7 @@ def convert_missing_cells(types, names, rows, dstr="", dint=0, dfloat=0.0):
         new_rows.append(new_row)
     return new_rows
 
+
 def convert_columns(names, rows, **kwargs):
     """
     convert_columns executes converter functions on specific columns, where
@@ -184,6 +191,7 @@ def convert_columns(names, rows, **kwargs):
                 new_row.append(col)
         new_rows.append(new_row)
     return new_rows
+
 
 def convert_types(types, names, rows, fstr=None, fint=None, ffloat=None):
     """
@@ -212,6 +220,7 @@ def convert_types(types, names, rows, fstr=None, fint=None, ffloat=None):
         new_rows.append(new_row)
     return new_rows
 
+
 def column(types, names, rows, colname):
     """
     column returns the column with name "colname", where the column returned
@@ -234,6 +243,7 @@ def column(types, names, rows, colname):
 
     return types[names[colindex]], names[colindex], colcells
 
+
 def columns(types, names, rows):
     """
     columns returns a list of all columns in the data set, where each column
@@ -251,6 +261,7 @@ def columns(types, names, rows):
         cols.append((types[name], name, colcells[i]))
     return cols
 
+
 def type_str(typ):
     """
     type_str returns a string representation of a column type.
@@ -265,6 +276,7 @@ def type_str(typ):
         return "str"
     return "Unknown"
 
+
 def cell_str(cell_contents):
     """
     cell_str is a convenience function for converting cell contents to a string
@@ -277,6 +289,7 @@ def cell_str(cell_contents):
         return "NULL"
     return str(cell_contents)
 
+
 def print_data_table(types, names, rows):
     """
     print_data_table is a convenience function for pretty-printing the
@@ -287,7 +300,7 @@ def print_data_table(types, names, rows):
     maxlens = map(len, headers)
     for row in rows:
         for i, col in enumerate(row):
-           maxlens[i] = max(maxlens[i], len(cell_str(col)))
+            maxlens[i] = max(maxlens[i], len(cell_str(col)))
 
     def padded_cell(i, s):
         spaces = maxlens[i] - len(cell_str(s)) + padding
@@ -304,18 +317,18 @@ def print_data_table(types, names, rows):
             line += padded_cell(i, cell_str(col))
         print line
 
+
 if __name__ == '__main__':
     # File name.
     f = "sample.csv"
 
-    # Get the initial data from the CSV file, "names" will contain the values 
-    # of each column in the first row if the optional "skip_header" parameter 
-    # is not set. If "skip_header" is set, then the column names are the column 
-    # indices
-    # as strings.
+    # Get the initial data from the CSV file, "names" will contain the values
+    # of each column in the first row if the optional "skip_header" parameter
+    # is not set. If "skip_header" is set, then the column names are the column
+    # indices as strings.
     names, rows = data(f)
 
-    # Infers the type of each column. See the function definition for how the 
+    # Infers the type of each column. See the function definition for how the
     # types are computed.
     types = column_types(names, rows)
 
@@ -343,20 +356,20 @@ if __name__ == '__main__':
     print_data_table(types, names, rows)
     print '\n'
 
-    # Print the table after converting missing values from NULL to concrete 
-    # values. The benefit here is that NULL values are inherently incomputable.  
-    # Whenever they get thrown into a computation on the data, they will always 
-    # provoke a runtime error. This is a Good Thing, because missing values 
-    # SHOULD be given explicit treatment. Inserting values into missing cells 
+    # Print the table after converting missing values from NULL to concrete
+    # values. The benefit here is that NULL values are inherently incomputable.
+    # Whenever they get thrown into a computation on the data, they will always
+    # provoke a runtime error. This is a Good Thing, because missing values
+    # SHOULD be given explicit treatment. Inserting values into missing cells
     # is making an *assumption* about the data, and should never be implied.
     #
-    # Thus, `convert_missing_cells` is an EXPLICIT way of throwing away NULL 
-    # cells. If you view the output from the previous table, and the output of 
-    # the next table, you'll notice that NULL values have been replaced. 
-    # (String columns get empty strings, integer columns get 0 and float 
+    # Thus, `convert_missing_cells` is an EXPLICIT way of throwing away NULL
+    # cells. If you view the output from the previous table, and the output of
+    # the next table, you'll notice that NULL values have been replaced.
+    # (String columns get empty strings, integer columns get 0 and float
     # columns get 0.0.)
     #
-    # If you want to change what the missing values are replaced with, you can 
+    # If you want to change what the missing values are replaced with, you can
     # use the function's optional parameters:
     #
     #   rows = convert_missing_cells(types, names, rows,
@@ -367,12 +380,12 @@ if __name__ == '__main__':
     print '\n'
 
     # Now that all of the NULL cells have been removed, we are free to run data
-    # sanitization functions on the columns of data without worrying about 
-    # seeing those nasty NULL values. For instance, we might want to make all 
-    # strings in the 'string1' column be lowercase. We need only to pass a 
-    # function as an argument, where the function we pass takes a single 
-    # argument (the cell contents) and returns the new cell contents. In this 
-    # case, we tell every cell in the `string1` column to be converted using 
+    # sanitization functions on the columns of data without worrying about
+    # seeing those nasty NULL values. For instance, we might want to make all
+    # strings in the 'string1' column be lowercase. We need only to pass a
+    # function as an argument, where the function we pass takes a single
+    # argument (the cell contents) and returns the new cell contents. In this
+    # case, we tell every cell in the `string1` column to be converted using
     # the `str.lower` function.
     rows = convert_columns(names, rows, string1=str.lower)
     print "# Sanitize just one column of data"
@@ -381,9 +394,9 @@ if __name__ == '__main__':
 
     # The aforementioned function has limited use, since you typically
     # want to be more dynamic than having to give names of columns. Thus, the
-    # `convert_types` function allows you to convert cells based on their *type*.
-    # That is, instead of making only a selection of columns lowercase, we can
-    # specify that *all* string columns should be lowercase.
+    # `convert_types` function allows you to convert cells based on their
+    # *type*. That is, instead of making only a selection of columns lowercase,
+    # we can specify that *all* string columns should be lowercase.
     rows = convert_types(types, names, rows, fstr=str.lower)
     print "# Sanitize all cells that have type string"
     print_data_table(types, names, rows)
@@ -396,4 +409,3 @@ if __name__ == '__main__':
 
     # Or pick out one column in particular:
     print column(types, names, rows, "mixed")
-
