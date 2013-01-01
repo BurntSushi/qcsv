@@ -10,7 +10,7 @@ def print_freqs(types, names, rows, colname, limit=25):
     _, _, colcells = qcsv.column(types, names, rows, colname)
     freqs = qcsv.frequencies(colcells)
     desc = sorted(freqs, key=lambda k: freqs[k], reverse=True)
-    for value in desc[:25]:
+    for value in desc[:limit]:
         print '%d %s' % (freqs[value], qcsv.cell_str(value))
 
 f = "/home/andrew/tmp/kait/chit.csv"

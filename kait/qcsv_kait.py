@@ -405,6 +405,12 @@ if __name__ == '__main__':
     print_data_table(types, names, rows)
     print '\n'
 
+
+    rows = convert_columns(names, rows, numeric2=int)
+    print "# numeric2 to int"
+    print_data_table(types, names, rows)
+    print '\n'
+
     # The aforementioned function has limited use, since you typically
     # want to be more dynamic than having to give names of columns. Thus, the
     # `convert_types` function allows you to convert cells based on their
