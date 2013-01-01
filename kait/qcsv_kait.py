@@ -1,5 +1,7 @@
 import csv
 
+import numpy as np
+
 
 def read(fname, delimiter=',', skip_header=False):
     """
@@ -15,7 +17,7 @@ def read(fname, delimiter=',', skip_header=False):
     If skip_header is set, then no column headers are read, and column names
     are set to their corresponding indices (as strings).
     """
-    names, rows = data(f, delimiter, skip_header)
+    names, rows = data(fname, delimiter, skip_header)
     types = column_types(names, rows)
     rows = cast(types, names, rows)
     return types, names, rows
@@ -241,7 +243,7 @@ def column(types, names, rows, colname):
             if i == colindex:
                 colcells.append(col)
 
-    return types[names[colindex]], names[colindex], colcells
+    return types[names[colindex]], names[colindex], np.array(colcells)
 
 
 def columns(types, names, rows):
@@ -258,8 +260,19 @@ def columns(types, names, rows):
 
     cols = []
     for i, name in enumerate(names):
-        cols.append((types[name], name, colcells[i]))
+        cols.append((types[name], name, np.array(colcells[i])))
     return cols
+
+
+def frequencies(colcells):
+    """
+    frequencies returns a dictionary where the keys are unique values in the
+    column, and the values correspond to the frequency of each value in the
+    column.
+    """
+    ukeys = np.unique(colcells)
+    bins = np.searchsorted(ukeys, colcells)
+    return dict(zip(ukeys, np.bincount(bins)))
 
 
 def type_str(typ):

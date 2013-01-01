@@ -11,7 +11,7 @@ pypi-meta:
 	python2 setup.py register
 
 pep8:
-	pep8-python2 qcsv/*.py
+	pep8-python2 __init__.py
 
 push:
 	git push origin master

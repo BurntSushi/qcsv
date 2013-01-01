@@ -1,5 +1,5 @@
 #!/bin/sh
 
 rm -rf docs/*
-epydoc -v --html --name qcsv --no-private -o ./doc/ qcsv.py
+epydoc -v --html --name qcsv --no-private -o ./doc/ __init__.py
 
