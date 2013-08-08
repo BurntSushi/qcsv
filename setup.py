@@ -33,10 +33,9 @@ setup(
         'Topic :: Database',
     ],
     platforms='ANY',
-    packages=['qcsv'],
-    package_dir={'qcsv': '.'},
-    package_data={'qcsv': ['sample.csv']},
-    data_files=[('share/doc/qcsv', ['README', 'COPYING', 'INSTALL']),
+    py_modules=['qcsv'],
+    data_files=[('share/doc/qcsv', ['README', 'COPYING', 'INSTALL',
+                                    'sample.csv']),
                 ('share/doc/qcsv/doc', docfiles)],
     scripts=[]
 )
