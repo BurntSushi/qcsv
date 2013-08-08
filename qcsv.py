@@ -5,29 +5,57 @@ each column of data.
 Currently, only int, float and string types are supported.
 from collections import namedtuple
 """
+from collections import namedtuple
 import csv
 
 import numpy as np
 
+__pdoc = {}
 
 Table = namedtuple('Table', ['types', 'names', 'rows'])
+__pdoc['qcsv.Table.types'] = '''
+Contains inferred type information for each column in the table
+as a dictionary mapping type name to a Python type constructor.
+When a type cannot be inferred, it will have type `None`.
+'''
+__pdoc['qcsv.Table.names'] = '''
+A list of column names from the header row of the source data.
+'''
+__pdoc['qcsv.Table.rows'] = '''
+A list of rows, where each row is a list of data. Each datum
+is guaranteed to have type `float`, `int`, `str` or will be the
+`None` value.
+'''
+
 Column = namedtuple('Column', ['type', 'name', 'cells'])
+__pdoc['qcsv.Column.type'] = '''
+The type of this column as a Python type constructor, or `None`
+if the type could not be inferred.
+'''
+__pdoc['qcsv.Column.name'] = '''
+The name of this column.
+'''
+__pdoc['qcsv.Column.cells'] = '''
+A list of list of all data in this column. Each datum is guaranteed to
+have type `float`, `int`, `str` or will be the `None` value.
+'''
 
 
 def read(fname, delimiter=',', skip_header=False):
     """
-    read loads cell data, column headers and type information for
-    each column given a file path to a CSV formatted file. A "Table"
-    namedtuple is returned with fields "types", "names" and "rows".
+    `read` loads cell data, column headers and type information
+    for each column given a file path to a CSV formatted file. A
+    `qcsv.Table` namedtuple is returned with fields `qcsv.Table.types`,
+    `qcsv.Table.names` and `qcsv.Table.rows`.
 
     All cells have left and right whitespace trimmed.
 
-    All rows MUST be the same length.
+    All rows **must** be the same length.
 
-    delimiter is the string the separates each field in a row.
+    `delimiter` is the string the separates each field in a row.
 
-    If skip_header is set, then no column headers are read, and column
-    names are set to their corresponding indices (as strings).
+    If `skip_header` is set, then no column headers are read, and
+    column names are set to their corresponding indices (as strings).
     """
     names, rows = _data(fname, delimiter, skip_header)
     types = _column_types(names, rows)
@@ -37,14 +65,14 @@ def read(fname, delimiter=',', skip_header=False):
 
 def _data(fname, delimiter=',', skip_header=False):
     """
-    _data loads cell data and column headers, and returns the names
+    `_data` loads cell data and column headers, and returns the names
     and rows.
 
     All cells have left and right whitespace trimmed.
 
     All rows MUST be the same length.
 
-    delimiter and skip_header are described in read.
+    `delimiter` and `skip_header` are described in `qcsv.read`.
     """
     names = []
     rows = []
@@ -69,22 +97,22 @@ def _data(fname, delimiter=',', skip_header=False):
 
 def _column_types(names, rows):
     """
-    _column_types infers type information from the columns in
-    rows. Types are stored as either a Python type conversion function
-    (str, int or float) or as a None value. A dictionary of column
-    names to types is returned.
+    `_column_types` infers type information from the columns in
+    `rows`. Types are stored as either a Python type constructor (str,
+    int or float) or as a `None` value. A dictionary of column names to
+    types is returned.
 
-    A column has type None if and only if all cells in the column are
+    A column has type `None` if and only if all cells in the column are
     empty.  (Cells are empty if the length of its value is zero after
     left and right whitespace has been trimmed.)
 
-    A column has type float if and only if all cells in the column are
-    empty, integers or floats AND at least one value is a float.
+    A column has type `float` if and only if all cells in the column
+    are empty, integers or floats AND at least one value is a float.
 
-    A column has type int if and only if all cells in the column are
+    A column has type `int` if and only if all cells in the column are
     empty or integers AND at least one value is an int.
 
-    A column has type string in any other case.
+    A column has type `str` in any other case.
     """
     types = dict([(name, None) for name in names])
 
@@ -142,12 +170,12 @@ def _column_types(names, rows):
 
 def map_names(table, f):
     """
-    new_rows executes f on every column header in the table, with three
-    arguments, in order: column type, column index, column name. The
-    result of the function is placed in the corresponding header
-    location.
+    `map_names` executes `f` on every column header in `table`, with
+    three arguments, in order: column type, column index, column
+    name. The result of the function is placed in the corresponding
+    header location.
 
-    A new table is returned with the new column names.
+    A new `qcsv.Table` is returned with the new column names.
     """
     new_names = []
     for i, name in enumerate(table.names):
@@ -157,12 +185,12 @@ def map_names(table, f):
 
 def map_data(table, f):
     """
-    new_rows executes f on every cell of data with five arguments,
-    in order: column type, column name, row index, column index,
-    contents. The result of the function is placed in the corresponding
-    cell location.
+    `map_data` executes `f` on every cell in `table` with five
+    arguments, in order: column type, column name, row index, column
+    index, contents. The result of the function is placed in the
+    corresponding cell location.
 
-    A new table is returned with the converted values.
+    A new `qcsv.Table` is returned with the converted values.
     """
     new_rows = [None] * len(table.rows)
     for r, row in enumerate(table.rows):
@@ -177,15 +205,14 @@ def map_data(table, f):
 
 def cast(table):
     """
-    cast type casts all of the values in 'rows' to their corresponding
-    types in types.
+    `cast` type casts all of the values in `table` to their
+    corresponding types in `qcsv.Table.types`.
 
     The only special case here is missing values or NULL columns. If a
     value is missing or a column has type NULL (i.e., all values are
-    missing), then the value is replaced with None, which is Python's
-    version of a NULL value.
+    missing), then the value is replaced with `None`.
 
-    N.B. cast is idempotent. i.e., cast(x) = cast(cast(x)).
+    N.B. cast is idempotent. i.e., `cast(x) = cast(cast(x))`.
     """
     def f(typ, name, r, c, cell):
         if (isinstance(cell, basestring) and len(cell) == 0) \
@@ -197,10 +224,10 @@ def cast(table):
 
 def convert_missing_cells(table, dstr="", dint=0, dfloat=0.0):
     """
-    convert_missing_cells changes the values of all NULL cells to the
-    values specified by dstr, dint and dfloat. For example, all NULL
-    cells in columns with type "string" will be replaced with the value
-    given to dstr.
+    `convert_missing_cells` changes the values of all NULL cells to the
+    values specified by `dstr`, `dint` and `dfloat`. For example, all
+    NULL cells in columns with type `str` will be replaced with the
+    value given to `dstr`.
     """
     def f(typ, name, r, c, cell):
         if cell is None and typ is not None:
@@ -218,13 +245,16 @@ def convert_missing_cells(table, dstr="", dint=0, dfloat=0.0):
 
 def convert_columns(table, **kwargs):
     """
-    convert_columns executes converter functions on specific columns,
-    where the parameter names for kwargs are the column names, and
+    `convert_columns` executes converter functions on specific columns,
+    where the parameter names for `kwargs` are the column names, and
     the parameter values are functions of one parameter that return a
     single value.
 
-    e.g., convert_columns(names, rows, colname=lambda s: s.lower())
-    would convert all values in the column with name 'colname' to
+    For example
+
+        convert_columns(names, rows, colname=lambda s: s.lower())
+
+    would convert all values in the column with name `colname` to
     lowercase.
     """
     def f(typ, name, r, c, cell):
@@ -236,13 +266,8 @@ def convert_columns(table, **kwargs):
 
 def convert_types(table, fstr=None, fint=None, ffloat=None):
     """
-    convert_types works just like convert_columns, but on types instead
-    of specific columns. This function will likely be more useful,
-    since sanitizatiion functions are typically type oriented rather
-    than column oriented.
-
-    However, when there are specific kinds of columns that need special
-    sanitization, convert_columns should be used.
+    `convert_types` works just like `qcsv.convert_columns`, but on
+    types instead of specific columns.
     """
     def f(typ, name, r, c, cell):
         if typ == str and fstr is not None:
@@ -257,9 +282,8 @@ def convert_types(table, fstr=None, fint=None, ffloat=None):
 
 def column(table, colname):
     """
-    column returns the column with name "colname", where the column
-    returned is a triple of the column type, the column name and a
-    NumPy array of cells in the column.
+    `column` returns a named tuple `qcsv.Column` of the column in
+    `table` with name `colname`.
     """
     colcells = []
     colname = colname.lower()
@@ -282,9 +306,8 @@ def column(table, colname):
 
 def columns(table):
     """
-    columns returns a list of all columns in the data set, where each
-    column is a triple of its type, name and a NumPy array of cells in
-    the column.
+    `columns` returns a list of all columns in the data set, where each
+    column has type `qcsv.Column`.
     """
     colcells = []
     for _ in table.names:
@@ -304,7 +327,7 @@ def columns(table):
 
 def frequencies(column):
     """
-    frequencies returns a dictionary where the keys are unique values
+    `frequencies` returns a dictionary where the keys are unique values
     in the column, and the values correspond to the frequency of each
     value in the column.
     """
@@ -315,7 +338,7 @@ def frequencies(column):
 
 def type_str(typ):
     """
-    type_str returns a string representation of a column type.
+    `type_str` returns a string representation of a column type.
     """
     if typ is None:
         return "None"
@@ -330,8 +353,8 @@ def type_str(typ):
 
 def cell_str(cell_contents):
     """
-    cell_str is a convenience function for converting cell contents to
-    a string when there are still NULL values.
+    `cell_str` is a convenience function for converting cell contents
+    to a string when there are still NULL values.
 
     N.B. If you choose to work with data while keeping NULL values, you
     will likely need to write more functions similar to this one.
@@ -343,7 +366,7 @@ def cell_str(cell_contents):
 
 def print_data_table(table):
     """
-    print_data_table is a convenience function for pretty-printing
+    `print_data_table` is a convenience function for pretty-printing
     the data in tabular format, including header names and type
     annotations.
     """
