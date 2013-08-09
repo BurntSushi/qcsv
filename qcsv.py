@@ -5,6 +5,7 @@ each column of data.
 Currently, only int, float and string types are supported.
 from collections import namedtuple
 """
+from __future__ import absolute_import, division, print_function
 from collections import namedtuple
 import csv
 
@@ -39,6 +40,11 @@ __pdoc['qcsv.Column.cells'] = '''
 A list of list of all data in this column. Each datum is guaranteed to
 have type `float`, `int`, `str` or will be the `None` value.
 '''
+
+try:
+    text_type = basestring
+except NameError:
+    text_type = str
 
 
 def read(fname, delimiter=',', skip_header=False):
@@ -78,19 +84,19 @@ def _data(fname, delimiter=',', skip_header=False):
     rows = []
     reader = csv.reader(open(fname), delimiter=delimiter)
     if not skip_header:
-        names = map(str.strip, reader.next())
+        names = list(map(str.strip, next(reader)))
 
     for i, row in enumerate(reader):
         # If we haven't discovered names from column headers, then name the
         # columns "0", "1", ..., "n-1" where "n" is the number of columns in
         # the first row.
         if len(names) == 0:
-            names = map(str, range(0, len(row)))
+            names = list(map(str, range(0, len(row))))
         assert len(row) == len(names), \
             'The length of row %d is %d, but others rows have length %d' \
             % (i, len(row), len(names))
 
-        rows.append(map(str.strip, row))
+        rows.append(list(map(str.strip, row)))
 
     return names, rows
 
@@ -116,7 +122,7 @@ def _column_types(names, rows):
     """
     types = dict([(name, None) for name in names])
 
-    for c in xrange(len(names)):
+    for c in range(len(names)):
         # prev_typ is what we believe the type of this column to be up
         # until this point.
         prev_typ = None
@@ -215,7 +221,7 @@ def cast(table):
     N.B. cast is idempotent. i.e., `cast(x) = cast(cast(x))`.
     """
     def f(typ, name, r, c, cell):
-        if (isinstance(cell, basestring) and len(cell) == 0) \
+        if (isinstance(cell, text_type) and len(cell) == 0) \
                 or typ is None or cell is None:
             return None
         return typ(cell)
@@ -372,7 +378,7 @@ def print_data_table(table):
     """
     padding = 2
     headers = ['%s (%s)' % (n, type_str(table.types[n])) for n in table.names]
-    maxlens = map(len, headers)
+    maxlens = list(map(len, headers))
     for row in table.rows:
         for i, col in enumerate(row):
             maxlens[i] = max(maxlens[i], len(cell_str(col)))
@@ -384,13 +390,13 @@ def print_data_table(table):
     line = ""
     for i, name in enumerate(headers):
         line += padded_cell(i, name)
-    print line
-    print '-' * (sum(map(len, headers)) + len(headers) * padding)
+    print(line)
+    print('-' * (sum(map(len, headers)) + len(headers) * padding))
     for row in table.rows:
         line = ""
         for i, col in enumerate(row):
             line += padded_cell(i, cell_str(col))
-        print line
+        print(line)
 
 
 if __name__ == '__main__':
@@ -400,9 +406,9 @@ if __name__ == '__main__':
     table = read(f)
 
     # Print the table of raw data.
-    print "# Raw data."
+    print("# Raw data.")
     print_data_table(table)
-    print '\n'
+    print('\n')
 
     # Print the table after converting missing values from NULL to concrete
     # values. The benefit here is that NULL values are inherently incomputable.
@@ -423,9 +429,9 @@ if __name__ == '__main__':
     #   rows = convert_missing_cells(types, names, rows,
     #                                dstr="-9.99", dfloat=-9.99, dint=-9)
     table = convert_missing_cells(table)
-    print "# Convert missing cells to arbitrary values"
+    print("# Convert missing cells to arbitrary values")
     print_data_table(table)
-    print '\n'
+    print('\n')
 
     # Now that all of the NULL cells have been removed, we are free to run data
     # sanitization functions on the columns of data without worrying about
@@ -436,9 +442,9 @@ if __name__ == '__main__':
     # case, we tell every cell in the `string1` column to be converted using
     # the `str.lower` function.
     table = convert_columns(table, string1=str.lower)
-    print "# Sanitize just one column of data"
+    print("# Sanitize just one column of data")
     print_data_table(table)
-    print '\n'
+    print('\n')
 
     # The aforementioned function has limited use, since you typically
     # want to be more dynamic than having to give names of columns. Thus, the
@@ -446,15 +452,15 @@ if __name__ == '__main__':
     # *type*. That is, instead of making only a selection of columns lowercase,
     # we can specify that *all* string columns should be lowercase.
     table = convert_types(table, fstr=str.lower)
-    print "# Sanitize all cells that have type string"
+    print("# Sanitize all cells that have type string")
     print_data_table(table)
-    print '\n'
+    print('\n')
 
     # Finally, you can traverse your data set by columns like so:
     for col in columns(table):
-        print '(%s, %s) [%s]' \
-            % (col.name, col.type, ', '.join(map(cell_str, col.cells)))
-    print '\n'
+        print('(%s, %s) [%s]'
+              % (col.name, col.type, ', '.join(map(cell_str, col.cells))))
+    print('\n')
 
     # Or pick out one column in particular:
-    print column(table, "mixed")
+    print(column(table, "mixed"))
