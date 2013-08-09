@@ -4,7 +4,7 @@ docs:
 		doc/* \
 		Geils:~/www/burntsushi.net/public_html/doc/qcsv/
 
-pypi: docs
+pypi:
 	sudo python2 setup.py register sdist bdist_wininst upload
 
 pypi-meta:
