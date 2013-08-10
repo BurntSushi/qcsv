@@ -1,21 +1,21 @@
+all:
+	@echo "Specify a target."
+
 docs:
-	scripts/generate-docs
-	rsync -rh --inplace \
-		doc/* \
-		Geils:~/www/burntsushi.net/public_html/doc/qcsv/
+	pdoc --html --html-dir ./doc --overwrite ./qcsv.py
 
 pypi:
 	sudo python2 setup.py register sdist bdist_wininst upload
 
-pypi-meta:
-	python2 setup.py register
+dev-install: docs
+	[[ -n "$$VIRTUAL_ENV" ]] || exit
+	rm -rf ./dist
+	python2 setup.py sdist
+	pip install -U dist/*.tar.gz
 
 pep8:
-	pep8-python2 __init__.py
+	pep8-python2 qcsv.py
 
 push:
 	git push origin master
 	git push github master
-
-clean:
-	sudo rm -rf build dist MANIFEST
