@@ -11,32 +11,32 @@ import csv
 
 import numpy as np
 
-__pdoc = {}
+__pdoc__ = {}
 
 Table = namedtuple('Table', ['types', 'names', 'rows'])
-__pdoc['qcsv.Table.types'] = '''
+__pdoc__['Table.types'] = '''
 Contains inferred type information for each column in the table
 as a dictionary mapping type name to a Python type constructor.
 When a type cannot be inferred, it will have type `None`.
 '''
-__pdoc['qcsv.Table.names'] = '''
+__pdoc__['Table.names'] = '''
 A list of column names from the header row of the source data.
 '''
-__pdoc['qcsv.Table.rows'] = '''
+__pdoc__['Table.rows'] = '''
 A list of rows, where each row is a list of data. Each datum
 is guaranteed to have type `float`, `int`, `str` or will be the
 `None` value.
 '''
 
 Column = namedtuple('Column', ['type', 'name', 'cells'])
-__pdoc['qcsv.Column.type'] = '''
+__pdoc__['Column.type'] = '''
 The type of this column as a Python type constructor, or `None`
 if the type could not be inferred.
 '''
-__pdoc['qcsv.Column.name'] = '''
+__pdoc__['Column.name'] = '''
 The name of this column.
 '''
-__pdoc['qcsv.Column.cells'] = '''
+__pdoc__['Column.cells'] = '''
 A list of list of all data in this column. Each datum is guaranteed to
 have type `float`, `int`, `str` or will be the `None` value.
 '''
